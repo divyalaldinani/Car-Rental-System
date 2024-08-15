@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import static java.lang.System.out;
 
 class Vehicle {
     private String vehicleId;
@@ -118,23 +119,27 @@ class CarRentalService {
             vehicle.rentOut();
             rentals.add(new Rental(vehicle, customer, days));
         } else {
-            System.out.println("Sorry, the vehicle is currently unavailable.");
+            out.println("Sorry, the vehicle is currently unavailable.");
         }
     }
 
     public void returnVehicle(Vehicle vehicle) {
-        vehicle.returnVehicle();
-        Rental rentalToRemove = null;
-        for (Rental rental : rentals) {
-            if (rental.getVehicle().equals(vehicle)) {
-                rentalToRemove = rental;
-                break;
+        if (!vehicle.isAvailable()) {
+            vehicle.returnVehicle();
+            Rental rentalToRemove = null;
+            for (Rental rental : rentals) {
+                if (rental.getVehicle().equals(vehicle)) {
+                    rentalToRemove = rental;
+                    break;
+                }
             }
-        }
-        if (rentalToRemove != null) {
-            rentals.remove(rentalToRemove);
+            if (rentalToRemove != null) {
+                rentals.remove(rentalToRemove);
+            } else {
+                out.println("This vehicle was not rented out.");
+            }
         } else {
-            System.out.println("This vehicle was not rented out.");
+            out.println("This vehicle is not currently rented out.");
         }
     }
 
@@ -142,16 +147,16 @@ class CarRentalService {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            System.out.println("===== Car Rental Service =====");
-            System.out.println("1. Rent a Vehicle");
-            System.out.println("2. Return a Vehicle");
-            System.out.println("3. Search Available Vehicles by Brand");
-            System.out.println("4. View All Rentals");
-            System.out.println("5. Exit");
-            System.out.print("Choose an option: ");
+            out.println("---- Car Rental Service ----");
+            out.println("1. Rent a Vehicle");
+            out.println("2. Return a Vehicle");
+            out.println("3. Search Available Vehicles by Brand");
+            out.println("4. View All Rentals");
+            out.println("5. Exit");
+            out.print("Choose an option: ");
 
             int option = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            scanner.nextLine();
 
             switch (option) {
                 case 1 -> rentVehicleOption(scanner);
@@ -159,35 +164,40 @@ class CarRentalService {
                 case 3 -> searchByBrandOption(scanner);
                 case 4 -> viewAllRentalsOption();
                 case 5 -> {
-                    System.out.println("Thank you for using the Car Rental Service!");
+                    out.println("Thank you for using the Car Rental Service!");
                     return;
                 }
-                default -> System.out.println("Invalid option. Please try again.");
+                default -> out.println("Invalid option. Please try again.");
             }
         }
     }
 
     private void rentVehicleOption(Scanner scanner) {
-        System.out.println("\n-- Rent a Vehicle --\n");
-        System.out.print("Enter your name: ");
+        out.println("\n-- Rent a Vehicle --\n");
+        out.print("Enter your name: ");
         String customerName = scanner.nextLine();
 
-        System.out.print("Enter your phone number: ");
+        out.print("Enter your phone number: ");
         String customerPhoneNumber = scanner.nextLine();
 
-        System.out.println("\nAvailable Vehicles:");
+        out.println("\nAvailable Vehicles:");
+        boolean hasAvailableVehicles = false;
         for (Vehicle vehicle : vehicles) {
             if (vehicle.isAvailable()) {
-                System.out.println(vehicle.getVehicleId() + " - " + vehicle.getMake() + " " + vehicle.getModel());
+                out.println(vehicle.getVehicleId() + " - " + vehicle.getMake() + " " + vehicle.getModel());
+                hasAvailableVehicles = true;
             }
         }
 
-        System.out.print("\nEnter the vehicle ID you want to rent: ");
+        if (!hasAvailableVehicles) {
+            out.println("No vehicles available for rent.");
+            return;
+        }
+
+        out.print("\nEnter the vehicle ID you want to rent: ");
         String vehicleId = scanner.nextLine();
 
-        System.out.print("Enter the number of days for rental: ");
-        int rentalDays = scanner.nextInt();
-        scanner.nextLine(); // Consume newline
+        out.print("Enter the number of days for rental: ");
 
         Customer newCustomer = new Customer("CUS" + (customers.size() + 1), customerName, customerPhoneNumber);
         addCustomer(newCustomer);
@@ -201,81 +211,85 @@ class CarRentalService {
         }
 
         if (selectedVehicle != null) {
+            int rentalDays = scanner.nextInt();
+            scanner.nextLine();
             double totalCost = selectedVehicle.calculateTotalCost(rentalDays);
-            System.out.println("\n== Rental Information ==\n");
-            System.out.println("Customer ID: " + newCustomer.getCustomerId());
-            System.out.println("Customer Name: " + newCustomer.getName());
-            System.out.println("Phone Number: " + newCustomer.getPhoneNumber());
-            System.out.println("Vehicle: " + selectedVehicle.getMake() + " " + selectedVehicle.getModel());
-            System.out.println("Rental Days: " + rentalDays);
-            System.out.printf("Total Cost: $%.2f%n", totalCost);
+            out.println("\n== Rental Information ==\n");
+            out.println("Customer ID: " + newCustomer.getCustomerId());
+            out.println("Customer Name: " + newCustomer.getName());
+            out.println("Phone Number: " + newCustomer.getPhoneNumber());
+            out.println("Vehicle: " + selectedVehicle.getMake() + " " + selectedVehicle.getModel());
+            out.println("Rental Days: " + rentalDays);
+            out.printf("Total Cost: $%.2f%n", totalCost);
 
-            System.out.print("\nConfirm rental (Y/N): ");
+            out.print("\nConfirm rental (Y/N): ");
             String confirm = scanner.nextLine();
 
             if (confirm.equalsIgnoreCase("Y")) {
                 rentVehicle(selectedVehicle, newCustomer, rentalDays);
-                System.out.println("\nVehicle rented successfully.");
+                out.println("\nVehicle rented successfully.");
             } else {
-                System.out.println("\nRental canceled.");
+                out.println("\nRental canceled.");
             }
         } else {
-            System.out.println("\nInvalid vehicle selection or vehicle not available for rent.");
+            out.println("\nInvalid vehicle ID or vehicle not available for rent.");
         }
     }
 
     private void returnVehicleOption(Scanner scanner) {
-        System.out.println("\n-- Return a Vehicle --\n");
-        System.out.print("Enter the vehicle ID you want to return: ");
+        out.println("\n-- Return a Vehicle --\n");
+        out.print("Enter the vehicle ID you want to return: ");
         String vehicleId = scanner.nextLine();
 
         Vehicle vehicleToReturn = null;
         for (Vehicle vehicle : vehicles) {
-            if (vehicle.getVehicleId().equals(vehicleId) && !vehicle.isAvailable()) {
+            if (vehicle.getVehicleId().equals(vehicleId)) {
                 vehicleToReturn = vehicle;
                 break;
             }
         }
 
         if (vehicleToReturn != null) {
-            Customer customer = null;
-            for (Rental rental : rentals) {
-                if (rental.getVehicle().equals(vehicleToReturn)) {
-                    customer = rental.getCustomer();
-                    break;
-                }
-            }
-
-            if (customer != null) {
+            if (!vehicleToReturn.isAvailable()) {
                 returnVehicle(vehicleToReturn);
-                System.out.println("Vehicle returned successfully by " + customer.getName());
+                out.println("Vehicle returned successfully.");
             } else {
-                System.out.println("Vehicle was not rented or rental information is missing.");
+                out.println("This vehicle is not currently rented out.");
             }
         } else {
-            System.out.println("Invalid vehicle ID or vehicle is not rented.");
+            out.println("Invalid vehicle ID.");
         }
     }
 
     private void searchByBrandOption(Scanner scanner) {
-        System.out.println("\n-- Search Vehicles by Brand --\n");
-        System.out.print("Enter the brand name: ");
+        out.println("\n-- Search Vehicles by Brand --\n");
+        out.print("Enter the brand name: ");
         String brandName = scanner.nextLine();
 
-        System.out.println("\nAvailable Vehicles of brand " + brandName + ":");
+        out.println("\nAvailable Vehicles of brand " + brandName + ":");
+        boolean found = false;
         for (Vehicle vehicle : vehicles) {
             if (vehicle.isAvailable() && vehicle.getMake().equalsIgnoreCase(brandName)) {
-                System.out.println(vehicle.getVehicleId() + " - " + vehicle.getMake() + " " + vehicle.getModel());
+                out.println(vehicle.getVehicleId() + " - " + vehicle.getMake() + " " + vehicle.getModel());
+                found = true;
             }
+        }
+
+        if (!found) {
+            out.println("No available vehicles found for the brand " + brandName + ".");
         }
     }
 
     private void viewAllRentalsOption() {
-        System.out.println("\n-- View All Rentals --\n");
-        for (Rental rental : rentals) {
-            System.out.println("Customer: " + rental.getCustomer().getName() + " | Phone: " +
-                    rental.getCustomer().getPhoneNumber() + " | Vehicle: " +
-                    rental.getVehicle().getMake() + " " + rental.getVehicle().getModel() + " | Days: " + rental.getDays());
+        out.println("\n-- View All Rentals --\n");
+        if (rentals.isEmpty()) {
+            out.println("No rentals available.");
+        } else {
+            for (Rental rental : rentals) {
+                out.println("Customer: " + rental.getCustomer().getName() + " | Phone: " +
+                        rental.getCustomer().getPhoneNumber() + " | Vehicle: " +
+                        rental.getVehicle().getMake() + " " + rental.getVehicle().getModel() + " | Days: " + rental.getDays());
+            }
         }
     }
 }

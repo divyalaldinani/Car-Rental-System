@@ -95,12 +95,12 @@ class Rental {
     }
 }
 
-class CarRentalService {
+class VehicleRentalService {
     private List<Vehicle> vehicles;
     private List<Customer> customers;
     private List<Rental> rentals;
 
-    public CarRentalService() {
+    public VehicleRentalService() {
         vehicles = new ArrayList<>();
         customers = new ArrayList<>();
         rentals = new ArrayList<>();
@@ -162,7 +162,7 @@ class CarRentalService {
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
-            out.println("---- Car Rental Service ----");
+            out.println("---- Vehicle Rental Service ----");
             out.println("1. Rent a Vehicle");
             out.println("2. Return a Vehicle");
             out.println("3. Search Available Vehicles by Brand");
@@ -180,7 +180,7 @@ class CarRentalService {
                 case 3 -> searchByBrandOption(scanner);
                 case 4 -> viewAllRentalsOption();
                 case 5 -> {
-                    out.println("Thank you for using the Car Rental Service!");
+                    out.println("Thank you for using our Rental Service!");
                     out.flush();
                     return;
                 }
@@ -334,7 +334,7 @@ class CarRentalService {
 
 public class Main {
     public static void main(String[] args) {
-        CarRentalService rentalService = new CarRentalService();
+        VehicleRentalService rentalService = new VehicleRentalService();
 
         Vehicle vehicle1 = new Vehicle("V001", "Toyota", "Corolla", 50.0);
         Vehicle vehicle2 = new Vehicle("V002", "Honda", "Civic", 65.0);
